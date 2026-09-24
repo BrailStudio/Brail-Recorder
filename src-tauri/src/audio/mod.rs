@@ -219,7 +219,12 @@ fn capture_system_audio(
         )?;
 
         // Create event for frame notification
-        let event = CreateEventW(None, false, false, None)?;
+        let event = windows::Win32::System::Threading::CreateEventW(
+            None,
+            false,
+            false,
+            None,
+        )?;
         client.SetEventHandle(event)?;
 
         let capture_client: IAudioCaptureClient = client.GetService()?;
@@ -334,7 +339,12 @@ fn capture_microphone(
             None,
         )?;
 
-        let event = CreateEventW(None, false, false, None)?;
+        let event = windows::Win32::System::Threading::CreateEventW(
+            None,
+            false,
+            false,
+            None,
+        )?;
         client.SetEventHandle(event)?;
 
         let capture_client: IAudioCaptureClient = client.GetService()?;
