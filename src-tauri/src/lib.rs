@@ -12,6 +12,7 @@ pub mod recovery;
 pub mod replay;
 pub mod security;
 pub mod storage;
+pub mod streaming;
 
 use std::sync::Arc;
 use parking_lot::Mutex;
