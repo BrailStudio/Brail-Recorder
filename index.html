@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Brail Recorder — Record. Stream. Replay.</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/styles.css" />
+    <script type="module" src="/src/main.ts" defer></script>
+  </head>
+
+  <body class="theme-dark">
+    <!-- Top Bar -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="12" cy="12" r="9" />
+            <circle cx="12" cy="12" r="4" fill="currentColor" />
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">BRAIL RECORDER</span>
+          <span class="brand-tagline">Record. Stream. Replay.</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div id="adaptive-badge" class="mode-badge" title="Brail Adaptive Engine Status">
+          <span class="pulse-dot"></span>
+          <span id="adaptive-mode-label">Balanced Mode</span>
+        </div>
+        <button id="btn-screenshot" class="icon-btn" title="Take Instant Screenshot (F12)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
+        </button>
+        <button id="btn-settings" class="icon-btn" title="Settings & Hardware">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main View -->
+    <main class="app-main">
+      <!-- Resolution & Encoder Summary Line -->
+      <div class="spec-summary">
+        <span id="spec-resolution-fps" class="spec-item">1920 × 1080 • 60 FPS</span>
+        <span class="spec-separator">•</span>
+        <span id="spec-encoder-name" class="spec-item spec-badge">Auto Encoder (Hardware)</span>
+      </div>
+
+      <!-- Center Action Zone -->
+      <div class="action-card">
+        <!-- Main Primary RECORD button -->
+        <button id="btn-record" class="main-btn record-btn">
+          <div class="btn-glow"></div>
+          <div class="btn-inner">
+            <span class="record-icon"></span>
+            <span id="record-btn-text" class="btn-label">RECORD</span>
+            <span id="record-timer" class="record-timer hidden">00:00:00</span>
+          </div>
+        </button>
+
+        <!-- Secondary Actions Row -->
+        <div class="secondary-actions">
+          <button id="btn-stream" class="sub-btn stream-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M2 12a10 10 0 0 1 10-10"/>
+              <path d="M5 12a7 7 0 0 1 7-7"/>
+              <path d="M8 12a4 4 0 0 1 4-4"/>
+              <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+              <path d="M22 12a10 10 0 0 0-10-10"/>
+              <path d="M19 12a7 7 0 0 0-7-7"/>
+              <path d="M16 12a4 4 0 0 0-4-4"/>
+            </svg>
+            <span id="stream-btn-text">STREAM</span>
+          </button>
+
+          <button id="btn-replay" class="sub-btn replay-btn" title="Save Instant Replay (Last 30s) (F10)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+              <path d="M3 3v5h5"/>
+              <path d="M12 7v5l4 2"/>
+            </svg>
+            <span>REPLAY</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Controls Row (Mic, Audio, Cam) -->
+      <div class="quick-controls">
+        <button id="toggle-mic" class="control-pill active" title="Toggle Microphone (Ctrl+Shift+M)">
+          <svg class="icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            <line x1="12" y1="19" x2="12" y2="22"/>
+          </svg>
+          <svg class="icon-off hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="1" y1="1" x2="23" y2="23"/>
+            <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V5a3 3 0 0 0-5.94-.6"/>
+            <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/>
+            <line x1="12" y1="19" x2="12" y2="22"/>
+          </svg>
+          <span id="label-mic">MIC ON</span>
+        </button>
+
+        <button id="toggle-system-audio" class="control-pill active" title="Toggle System Audio">
+          <svg class="icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+          </svg>
+          <svg class="icon-off hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <line x1="23" y1="9" x2="17" y2="15"/>
+            <line x1="17" y1="9" x2="23" y2="15"/>
+          </svg>
+          <span id="label-audio">AUDIO ON</span>
+        </button>
+
+        <button id="toggle-webcam" class="control-pill" title="Toggle Webcam Overlay">
+          <svg class="icon-on hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 7l-7 5 7 5V7z"/>
+            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+          </svg>
+          <svg class="icon-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="1" y1="1" x2="23" y2="23"/>
+            <path d="M21 21H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3m3-3h6l2 3h4a2 2 0 0 1 2 2v9.34m-7.72-2.06A4 4 0 1 1 5 12"/>
+          </svg>
+          <span id="label-webcam">CAM OFF</span>
+        </button>
+      </div>
+
+      <!-- Live Monitoring Status Bar -->
+      <footer class="app-footer">
+        <div class="perf-metric">
+          <span class="metric-label">RAM</span>
+          <span id="metric-ram" class="metric-value">38 MB</span>
+        </div>
+        <div class="perf-metric">
+          <span class="metric-label">CPU</span>
+          <span id="metric-cpu" class="metric-value">4%</span>
+        </div>
+        <div class="perf-metric">
+          <span class="metric-label">GPU</span>
+          <span id="metric-gpu" class="metric-value">8%</span>
+        </div>
+        <div class="perf-metric">
+          <span class="metric-label">DROPS</span>
+          <span id="metric-drops" class="metric-value">0</span>
+        </div>
+        <div class="perf-status">
+          <span class="status-indicator status-good"></span>
+          <span id="health-label">System: Optimal</span>
+        </div>
+      </footer>
+    </main>
+
+    <!-- LIVE RECORDING DASHBOARD MODAL/OVERLAY -->
+    <div id="recording-dashboard" class="dashboard-overlay hidden">
+      <div class="dashboard-panel">
+        <div class="dash-header">
+          <div class="dash-title">
+            <span class="rec-dot-pulse"></span>
+            <span>RECORDING IN PROGRESS</span>
+          </div>
+          <span id="rec-dash-timer" class="dash-timer">00:00:00</span>
+        </div>
+
+        <div class="dash-grid">
+          <div class="dash-card">
+            <span class="card-label">Resolution</span>
+            <span id="dash-rec-res" class="card-val">1920×1080</span>
+          </div>
+          <div class="dash-card">
+            <span class="card-label">Target FPS</span>
+            <span id="dash-rec-fps" class="card-val">60 FPS</span>
+          </div>
+          <div class="dash-card">
+            <span class="card-label">Encoder</span>
+            <span id="dash-rec-encoder" class="card-val">NVENC H.264</span>
+          </div>
+          <div class="dash-card">
+            <span class="card-label">Disk Throughput</span>
+            <span id="dash-rec-disk" class="card-val">38 MB/s</span>
+          </div>
+        </div>
+
+        <div class="dash-controls">
+          <button id="btn-pause-rec" class="btn btn-secondary">
+            <span id="pause-rec-label">Pause</span>
+          </button>
+          <button id="btn-stop-rec" class="btn btn-danger">
+            <span>Stop & Save Recording</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIVE STREAM DASHBOARD OVERLAY -->
+    <div id="streaming-dashboard" class="dashboard-overlay hidden">
+      <div class="dashboard-panel stream-dash-panel">
+        <div class="dash-header">
+          <div class="dash-title">
+            <span class="stream-live-badge">LIVE ●</span>
+            <span id="stream-platform-title">YouTube Live</span>
+          </div>
+          <span id="stream-dash-timer" class="dash-timer">00:00:00</span>
+        </div>
+
+        <div class="dash-grid">
+          <div class="dash-card">
+            <span class="card-label">Stream Quality</span>
+            <span id="stream-dash-quality" class="card-val">1080p60</span>
+          </div>
+          <div class="dash-card">
+            <span class="card-label">Bitrate</span>
+            <span id="stream-dash-bitrate" class="card-val">6.5 Mbps</span>
+          </div>
+          <div class="dash-card">
+            <span class="card-label">Dropped Frames</span>
+            <span id="stream-dash-drops" class="card-val">0 (0.0%)</span>
+          </div>
+          <div class="dash-card">
+            <span class="card-label">Connection Health</span>
+            <span id="stream-dash-health" class="card-val text-success">Excellent</span>
+          </div>
+        </div>
+
+        <div class="dash-controls">
+          <button id="btn-stop-stream" class="btn btn-danger">
+            <span>End Live Stream</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div id="settings-modal" class="modal-overlay hidden">
+      <div class="modal-window">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <h2>Brail Settings</h2>
+            <span class="modal-sub">Customize capture, hardware encoding, and streaming</span>
+          </div>
+          <button id="btn-close-settings" class="icon-btn close-modal-btn">✕</button>
+        </div>
+
+        <div class="settings-body">
+          <!-- Sidebar Tabs -->
+          <nav class="settings-tabs">
+            <button class="tab-btn active" data-tab="tab-general">General</button>
+            <button class="tab-btn" data-tab="tab-recording">Recording</button>
+            <button class="tab-btn" data-tab="tab-streaming">Streaming</button>
+            <button class="tab-btn" data-tab="tab-audio">Audio</button>
+            <button class="tab-btn" data-tab="tab-performance">Adaptive Engine</button>
+            <button class="tab-btn" data-tab="tab-hotkeys">Hotkeys</button>
+            <button class="tab-btn" data-tab="tab-hardware">Hardware & About</button>
+          </nav>
+
+          <!-- Tab Content Areas -->
+          <div class="tab-contents">
+            <!-- GENERAL TAB -->
+            <div id="tab-general" class="tab-pane active">
+              <h3>General Configuration</h3>
+              <div class="form-group">
+                <label>Recording Directory</label>
+                <div class="input-with-action">
+                  <input type="text" id="setting-rec-dir" readonly />
+                  <button id="btn-browse-rec-dir" class="btn btn-secondary">Browse</button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Screenshots Directory</label>
+                <div class="input-with-action">
+                  <input type="text" id="setting-screenshot-dir" readonly />
+                  <button id="btn-browse-screen-dir" class="btn btn-secondary">Browse</button>
+                </div>
+              </div>
+              <div class="form-check">
+                <input type="checkbox" id="setting-minimize-tray" checked />
+                <label for="setting-minimize-tray">Minimize to system tray when closed</label>
+              </div>
+              <div class="form-check">
+                <input type="checkbox" id="setting-startup" />
+                <label for="setting-startup">Launch Brail Recorder on Windows startup</label>
+              </div>
+            </div>
+
+            <!-- RECORDING TAB -->
+            <div id="tab-recording" class="tab-pane">
+              <h3>Recording Engine</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Resolution</label>
+                  <select id="setting-resolution">
+                    <option value="1920x1080" selected>1080p (1920 × 1080)</option>
+                    <option value="2560x1440">1440p (2560 × 1440)</option>
+                    <option value="3840x2160">4K (3840 × 2160)</option>
+                    <option value="1280x720">720p (1280 × 720)</option>
+                    <option value="854x480">480p (854 × 480)</option>
+                    <option value="640x360">360p (640 × 360)</option>
+                    <option value="256x144">144p (256 × 144)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Frame Rate</label>
+                  <select id="setting-fps">
+                    <option value="30">30 FPS (Low CPU)</option>
+                    <option value="60" selected>60 FPS (Smooth)</option>
+                    <option value="90">90 FPS (High Refresh)</option>
+                    <option value="120">120 FPS (Ultra Gaming)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Hardware Encoder</label>
+                  <select id="setting-encoder">
+                    <option value="auto" selected>Auto-Detect Best Hardware Encoder</option>
+                    <option value="nvenc">NVIDIA NVENC</option>
+                    <option value="amf">AMD AMF</option>
+                    <option value="qsv">Intel QuickSync (QSV)</option>
+                    <option value="cpu">Software (CPU Fallback)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Video Codec</label>
+                  <select id="setting-codec">
+                    <option value="h264" selected>H.264 (Broadest Compatibility)</option>
+                    <option value="h265">HEVC / H.265 (High Efficiency)</option>
+                    <option value="av1">AV1 (Next-Gen Hardware)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Video Bitrate: <span id="bitrate-val-label">12,000 kbps</span></label>
+                <input type="range" id="setting-bitrate" min="2000" max="40000" step="1000" value="12000" />
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Output Container</label>
+                  <select id="setting-container">
+                    <option value="mkv" selected>MKV (Crash-Resilient — Recommended)</option>
+                    <option value="mp4">MP4 (Standard)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-check">
+                <input type="checkbox" id="setting-auto-remux" checked />
+                <label for="setting-auto-remux">Automatically remux MKV to MP4 upon completion (instant zero-reencode)</label>
+              </div>
+
+              <div class="form-check">
+                <input type="checkbox" id="setting-capture-cursor" checked />
+                <label for="setting-capture-cursor">Capture mouse cursor in recording</label>
+              </div>
+            </div>
+
+            <!-- STREAMING TAB -->
+            <div id="tab-streaming" class="tab-pane">
+              <h3>Live Streaming (YouTube / Custom)</h3>
+              <div class="form-group">
+                <label>Streaming Platform</label>
+                <select id="setting-stream-platform">
+                  <option value="youtube" selected>YouTube Live</option>
+                  <option value="twitch">Twitch</option>
+                  <option value="custom">Custom RTMP / RTMPS</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Server Ingest URL</label>
+                <input type="text" id="setting-stream-server" value="rtmp://a.rtmp.youtube.com/live2" />
+              </div>
+
+              <div class="form-group">
+                <label>Stream Key (Stored securely with Windows DPAPI encryption)</label>
+                <div class="input-with-action">
+                  <input type="password" id="setting-stream-key" placeholder="Enter YouTube Stream Key..." />
+                  <button id="btn-toggle-stream-key" class="btn btn-secondary">👁 Show</button>
+                </div>
+                <small class="helper-text">Your stream key is encrypted via Windows DPAPI and never logged or exposed.</small>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Stream Quality Preset</label>
+                  <select id="setting-stream-preset">
+                    <option value="1080p60" selected>Full HD (1080p60 • 6.5 Mbps)</option>
+                    <option value="720p60">Balanced (720p60 • 4.5 Mbps)</option>
+                    <option value="1440p60">High (1440p60 • 13 Mbps)</option>
+                    <option value="4k60">Ultra 4K (4K60 • 28 Mbps)</option>
+                    <option value="480p">Low Internet (480p30 • 1.5 Mbps)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Auto-Reconnect</label>
+                  <select id="setting-stream-reconnect">
+                    <option value="true" selected>Enabled (5 retries with backoff)</option>
+                    <option value="false">Disabled</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="action-bar-row">
+                <button id="btn-test-connection" class="btn btn-primary">TEST CONNECTION</button>
+                <span id="test-connection-status" class="test-status"></span>
+              </div>
+            </div>
+
+            <!-- AUDIO TAB -->
+            <div id="tab-audio" class="tab-pane">
+              <h3>WASAPI Audio Settings</h3>
+              
+              <div class="audio-control-card">
+                <div class="audio-card-header">
+                  <span class="card-title">🔊 Desktop / System Audio</span>
+                  <div class="audio-meter">
+                    <div id="sys-meter-bar" class="meter-bar" style="width: 60%"></div>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Volume: <span id="sys-vol-label">100%</span></label>
+                  <input type="range" id="setting-sys-vol" min="0" max="100" value="100" />
+                </div>
+              </div>
+
+              <div class="audio-control-card">
+                <div class="audio-card-header">
+                  <span class="card-title">🎙 Microphone</span>
+                  <div class="audio-meter">
+                    <div id="mic-meter-bar" class="meter-bar" style="width: 25%"></div>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Microphone Volume: <span id="mic-vol-label">100%</span></label>
+                  <input type="range" id="setting-mic-vol" min="0" max="100" value="100" />
+                </div>
+                <div class="form-group">
+                  <label>Microphone Device</label>
+                  <select id="setting-mic-device">
+                    <option value="default">Default Recording Device</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- PERFORMANCE / ADAPTIVE ENGINE TAB -->
+            <div id="tab-performance" class="tab-pane">
+              <h3>Brail Adaptive Engine</h3>
+              <p class="section-desc">Automatically tunes capture, queue depths, and encoder parameters for low resource overhead.</p>
+
+              <div class="mode-selector-grid">
+                <div class="mode-card active" data-mode="balanced">
+                  <span class="mode-name">Balanced</span>
+                  <span class="mode-desc">Optimal balance between fidelity and minimal overhead</span>
+                </div>
+                <div class="mode-card" data-mode="lowend">
+                  <span class="mode-name">Low-End / Gaming</span>
+                  <span class="mode-desc">Prioritizes preserving game FPS and minimum CPU usage</span>
+                </div>
+                <div class="mode-card" data-mode="ultralite">
+                  <span class="mode-name">Ultra Lite</span>
+                  <span class="mode-desc">Target &lt;50 MB RAM, lowest latency for low-spec PCs</span>
+                </div>
+                <div class="mode-card" data-mode="quality">
+                  <span class="mode-name">Quality</span>
+                  <span class="mode-desc">Maximum video quality and high bitrate</span>
+                </div>
+                <div class="mode-card" data-mode="streaming">
+                  <span class="mode-name">Streaming</span>
+                  <span class="mode-desc">Prioritizes zero dropped frames and stream stability</span>
+                </div>
+              </div>
+
+              <div class="hardware-diagnostics-box">
+                <h4>Live Hardware Diagnostic Telemetry</h4>
+                <div class="diag-table">
+                  <div class="diag-row"><span>Process Working Set (RAM):</span><strong id="diag-ram">38 MB</strong></div>
+                  <div class="diag-row"><span>Process CPU Load:</span><strong id="diag-cpu">3.2%</strong></div>
+                  <div class="diag-row"><span>Capture Pipeline FPS:</span><strong id="diag-fps">60.0</strong></div>
+                  <div class="diag-row"><span>Engine Overhead:</span><strong class="text-success">Extremely Low</strong></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- HOTKEYS TAB -->
+            <div id="tab-hotkeys" class="tab-pane">
+              <h3>Global Hotkeys</h3>
+              <div class="hotkey-list">
+                <div class="hotkey-row">
+                  <span>Toggle Recording</span>
+                  <kbd>F9</kbd>
+                </div>
+                <div class="hotkey-row">
+                  <span>Toggle Streaming</span>
+                  <kbd>F11</kbd>
+                </div>
+                <div class="hotkey-row">
+                  <span>Save Instant Replay (Last 30s)</span>
+                  <kbd>F10</kbd>
+                </div>
+                <div class="hotkey-row">
+                  <span>Take Screenshot</span>
+                  <kbd>F12</kbd>
+                </div>
+                <div class="hotkey-row">
+                  <span>Mute / Unmute Microphone</span>
+                  <kbd>Ctrl + Shift + M</kbd>
+                </div>
+                <div class="hotkey-row">
+                  <span>Pause / Resume Recording</span>
+                  <kbd>F8</kbd>
+                </div>
+              </div>
+            </div>
+
+            <!-- HARDWARE & ABOUT TAB -->
+            <div id="tab-hardware" class="tab-pane">
+              <h3>Detected System & Hardware Capabilities</h3>
+              <div class="hardware-specs-card">
+                <div class="hw-item">
+                  <span class="hw-label">Operating System:</span>
+                  <span id="hw-os" class="hw-val">Windows 11 (64-bit)</span>
+                </div>
+                <div class="hw-item">
+                  <span class="hw-label">Primary GPU:</span>
+                  <span id="hw-gpu" class="hw-val">Detecting GPU...</span>
+                </div>
+                <div class="hw-item">
+                  <span class="hw-label">Hardware Encoder:</span>
+                  <span id="hw-encoder" class="hw-val">Hardware Acceleration Active</span>
+                </div>
+                <div class="hw-item">
+                  <span class="hw-label">Active Display:</span>
+                  <span id="hw-display" class="hw-val">Primary Display (1920×1080 @ 60Hz)</span>
+                </div>
+                <div class="hw-item">
+                  <span class="hw-label">Capture API:</span>
+                  <span class="hw-val">Windows Graphics Capture (WGC) + DXGI</span>
+                </div>
+                <div class="hw-item">
+                  <span class="hw-label">Audio Subsystem:</span>
+                  <span class="hw-val">Windows WASAPI (Low Latency Loopback)</span>
+                </div>
+              </div>
+
+              <div class="about-card">
+                <h4>Brail Recorder v1.0.0</h4>
+                <p>Engineered for minimal resource consumption. <br>Low RAM, minimal CPU usage, and high-fidelity video.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button id="btn-save-settings" class="btn btn-primary">Save & Apply Settings</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPLAY NOTIFICATION TOAST -->
+    <div id="toast" class="toast hidden">
+      <div class="toast-icon">✓</div>
+      <div class="toast-body">
+        <span id="toast-title" class="toast-title">Instant Replay Saved</span>
+        <span id="toast-desc" class="toast-desc">Saved last 30s of gameplay to Replays folder</span>
+      </div>
+    </div>
+
+    <!-- CRASH RECOVERY MODAL -->
+    <div id="recovery-modal" class="modal-overlay hidden">
+      <div class="modal-window recovery-window">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <h2 class="text-warning">⚠ Unfinished Recording Detected</h2>
+            <span class="modal-sub">Brail detected a recording from a previously interrupted session.</span>
+          </div>
+        </div>
+        <div class="recovery-body">
+          <p id="recovery-info-text">A recording was in progress. Your recorded data has been preserved.</p>
+        </div>
+        <div class="modal-footer">
+          <button id="btn-discard-session" class="btn btn-secondary">Discard</button>
+          <button id="btn-recover-session" class="btn btn-primary">Recover Recording</button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
